@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XLS to CSV Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+</head>
+<body>
+    <h1>XLS to CSV Converter</h1>
+    <input type="file" id="xlsFile" accept=".xls, .xlsx" />
+    <button id="convertBtn">Convert to CSV</button>
+    <a id="downloadLink" style="display:none;">Download CSV</a>
+
+    <script>
+        document.getElementById('convertBtn').addEventListener('click', function() {
+            const file = document.getElementById('xlsFile').files[0];
+            if (!file) {
+                alert('Please upload an Excel file.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                // Get the first sheet
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert to CSV
+                const csv = XLSX.utils.sheet_to_csv(worksheet);
+
+                // Create a Blob and a download link
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+                // Create a download link with the original file name
+                const link = document.getElementById('downloadLink');
+                const originalFileName = file.name.replace(/\.[^/.]+$/, ""); // Remove the original extension
+                link.href = URL.createObjectURL(blob);
+                link.download = `${originalFileName}.csv`; // Set new file name
+                link.style.display = 'block';
+                link.textContent = 'Download CSV';
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
+    </script>
+</body>
+</html>
